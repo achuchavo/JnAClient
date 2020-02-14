@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{9B4CC670-B83A-4262-A497-1ED25E49485D}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="ThreadTest.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="JnAClient.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="ThreadTest">
+        <MSBuild Projects="ThreadTest.dproj"/>
+    </Target>
+    <Target Name="ThreadTest:Clean">
+        <MSBuild Projects="ThreadTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ThreadTest:Make">
+        <MSBuild Projects="ThreadTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="JnAClient">
+        <MSBuild Projects="JnAClient.dproj"/>
+    </Target>
+    <Target Name="JnAClient:Clean">
+        <MSBuild Projects="JnAClient.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="JnAClient:Make">
+        <MSBuild Projects="JnAClient.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="ThreadTest;JnAClient"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="ThreadTest:Clean;JnAClient:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="ThreadTest:Make;JnAClient:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

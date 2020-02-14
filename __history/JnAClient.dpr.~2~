@@ -1,0 +1,14 @@
+program JnAClient;
+
+uses
+  System.StartUpCopy,
+  FMX.Forms,
+  ujnaclient in 'ujnaclient.pas' {fmjnaclient};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(Tfmjnaclient, fmjnaclient);
+  Application.Run;
+end.

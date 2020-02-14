@@ -310,7 +310,7 @@ begin
             //
             txt_name.Text := codebase.my_name;
 
-
+             //
              //upate JnA Info
              aconn := TMyconnection.Create(nil);
              try

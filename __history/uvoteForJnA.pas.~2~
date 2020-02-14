@@ -1,0 +1,75 @@
+unit uvoteForJnA;
+
+interface
+  uses
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+    //
+    dateutils,
+    Dialogs;
+  type
+  TVoteForJnA = class(TThread)
+  private
+    FTickEvent: THandle;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(voter_addr : String;voter_jump_time : Integer);
+    destructor Destroy; override;
+    procedure FinishThreadExecution;
+    procedure moveVote;
+    var
+      aaddr : String;
+      aJump_Time : Integer;
+  end;
+
+implementation
+   uses
+      uMain;
+
+{ TVoteForJnA }
+
+constructor TVoteForJnA.Create(voter_addr: String; voter_jump_time: Integer);
+begin
+  inherited Create(False);
+  FreeOnTerminate := True;
+  FTickEvent := CreateEvent(nil, True, False, nil);
+  aaddr := voter_addr;
+  aJump_Time := voter_jump_time;
+
+end;
+
+destructor TVoteForJnA.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TVoteForJnA.Execute;
+begin
+  while not Terminated do
+  begin
+    if WaitForSingleObject(FTickEvent, aJump_Time) = WAIT_TIMEOUT then
+    begin
+      Synchronize(procedure
+        begin
+          fmMain.memo1.Lines.add(aaddr);
+        end
+      );
+      FinishThreadExecution;
+    end;
+  end;
+
+end;
+
+procedure TVoteForJnA.FinishThreadExecution;
+begin
+    Terminate;
+    SetEvent(FTickEvent);
+end;
+
+procedure TVoteForJnA.moveVote;
+begin
+
+end;
+
+end.
