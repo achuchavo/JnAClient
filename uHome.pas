@@ -805,7 +805,9 @@ begin
                           end);
                           //verify and update day
                           //added to git
+                          //added to git
 
+                          averify  := AnsiLeftStr(aday_per, 1);
                           averify  := AnsiLeftStr(aday_per, 1);
                           TThread.Synchronize(TThread.CurrentThread,procedure()
                           begin
