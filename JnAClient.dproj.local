@@ -8,24 +8,24 @@
     <Transaction>2020/02/12 17:39:44.000.254,=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
     <Transaction>2020/02/12 17:40:54.000.200,=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
     <Transaction>2020/02/12 17:44:23.000.593,=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 09:56:52.445,=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 09:57:38.788,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\JnAClient.dproj=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
-    <Transaction>2020/02/13 09:57:47.511,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.fmx=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.fmx</Transaction>
-    <Transaction>2020/02/13 09:57:47.511,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.pas=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 09:58:04.844,C:\Users\Chavo\Box\Projects\ThreadTest\ujnaclient.pas=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.pas</Transaction>
-    <Transaction>2020/02/13 09:58:04.844,C:\Users\Chavo\Box\Projects\ThreadTest\ujnaclient.fmx=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.fmx</Transaction>
-    <Transaction>2020/02/13 09:58:13.938,C:\Users\Chavo\Box\Projects\ThreadTest\JnAClient.dproj=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\JnAClient.dproj</Transaction>
-    <Transaction>2020/02/13 10:37:49.026,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 10:38:03.312,C:\Users\Chavo\Box\Projects\ThreadTest\uHome.fmx=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.fmx</Transaction>
-    <Transaction>2020/02/13 10:38:03.312,C:\Users\Chavo\Box\Projects\ThreadTest\uHome.pas=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 10:58:11.179,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 11:00:07.210,C:\Users\Chavo\Box\Projects\ThreadTest\ucodebasejan.pas=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 11:00:25.020,C:\Users\Chavo\Box\Projects\ThreadTest\ucodebasejna.pas=C:\Users\Chavo\Box\Projects\ThreadTest\ucodebasejan.pas</Transaction>
-    <Transaction>2020/02/13 22:26:33.528,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 22:27:14.180,C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
-    <Transaction>2020/02/13 23:41:19.485,C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas=</Transaction>
-    <Transaction>2020/02/13 23:44:55.130,=C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas</Transaction>
-    <Transaction>2020/02/13 23:52:30.949,C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas=</Transaction>
+    <Transaction>2020/02/13 09:56:52.000.445,=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2020/02/13 09:57:38.000.788,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\JnAClient.dproj</Transaction>
+    <Transaction>2020/02/13 09:57:47.000.511,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.fmx=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.fmx</Transaction>
+    <Transaction>2020/02/13 09:57:47.000.511,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\Unit1.pas=C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.pas</Transaction>
+    <Transaction>2020/02/13 09:58:04.000.844,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.fmx=C:\Users\Chavo\Box\Projects\ThreadTest\ujnaclient.fmx</Transaction>
+    <Transaction>2020/02/13 09:58:04.000.844,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\ujnaclient.pas=C:\Users\Chavo\Box\Projects\ThreadTest\ujnaclient.pas</Transaction>
+    <Transaction>2020/02/13 09:58:13.000.938,C:\Users\Chavo\Documents\Embarcadero\Studio\Projects\JnAClient.dproj=C:\Users\Chavo\Box\Projects\ThreadTest\JnAClient.dproj</Transaction>
+    <Transaction>2020/02/13 10:37:49.000.026,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
+    <Transaction>2020/02/13 10:38:03.000.312,C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas=C:\Users\Chavo\Box\Projects\ThreadTest\uHome.pas</Transaction>
+    <Transaction>2020/02/13 10:38:03.000.312,C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.fmx=C:\Users\Chavo\Box\Projects\ThreadTest\uHome.fmx</Transaction>
+    <Transaction>2020/02/13 10:58:11.000.179,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
+    <Transaction>2020/02/13 11:00:07.000.210,C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas=C:\Users\Chavo\Box\Projects\ThreadTest\ucodebasejan.pas</Transaction>
+    <Transaction>2020/02/13 11:00:25.000.020,C:\Users\Chavo\Box\Projects\ThreadTest\ucodebasejan.pas=C:\Users\Chavo\Box\Projects\ThreadTest\ucodebasejna.pas</Transaction>
+    <Transaction>2020/02/13 22:26:33.000.528,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
+    <Transaction>2020/02/13 22:27:14.000.180,C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas=C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas</Transaction>
+    <Transaction>2020/02/13 23:41:19.000.485,C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas=</Transaction>
+    <Transaction>2020/02/13 23:44:55.000.130,=C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas</Transaction>
+    <Transaction>2020/02/13 23:52:30.000.949,C:\Users\Chavo\Box\Projects\ThreadTest\uUserinfo.pas=</Transaction>
   </Transactions>
 	<ActiveMobileDevice>
 		<NoProfile iOSSimulator="iPhone5" Android="ce031713712c80f20c"/>

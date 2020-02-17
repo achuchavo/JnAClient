@@ -12,5 +12,6 @@ uses
 begin
   Application.Initialize;
   Application.CreateForm(Tfmjnaclient, fmjnaclient);
+  Application.CreateForm(Tfmhome, fmhome);
   Application.Run;
 end.

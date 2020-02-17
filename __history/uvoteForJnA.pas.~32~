@@ -1,0 +1,828 @@
+unit uvoteForJnA;
+
+interface
+  uses
+    //Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+
+  GridsEh,Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.StdCtrls, Vcl.ExtCtrls,
+    //
+    dateutils,
+    strutils,
+    shellapi,
+    //
+    //TMyCOnnection Units
+    Data.DB, DBAccess, MyAccess,
+    //TMyQuery Units
+    MemDS,
+    //
+    System.JSON,
+    System.JSON.Types,
+    System.JSON.Writers,
+    System.JSON.Builders,
+    System.JSON.Readers,
+    IdBaseComponent, IdComponent, IdTCPConnection,
+    IdTCPClient, IdHTTP,IdGlobal,
+    LbCipher,
+    LbClass,
+    Dialogs;
+type
+  TVoteForJnA = class(TThread)
+  private
+    FTickEvent: THandle;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(voter_addr,holder,apwd,arnd,aminer: String;
+                        voter_jump_time : Integer);
+    destructor Destroy; override;
+    procedure FinishThreadExecution;
+    procedure moveVote;
+     function Decrypt(aStr: String): String;
+     function vote_sent(myaddr,mypwd,repaddr : String) : Boolean;
+     procedure get_rep_info;
+
+     //
+     function unlock_addr(aaddr,apwd : String) : boolean;
+     function send_vote(fromaddr,toaddr,apwd : String): Boolean;
+     function lock_addr(aaddr : String) : Boolean;
+     //
+     function get_ttcREST(aadrr: String): Double;
+
+     //DB
+     procedure add_autoVote(aaddr_from,aaddr_to,vote_type : String;
+                            avote,attc : double);
+     procedure get_curr_miner;
+     //
+     function get_miner_with_low_votes : boolean;
+
+     //
+    // function MySortProc(List: TStringList; Index1, Index2: integer): integer;
+    var
+      the_addr : String;
+      the_jump_time : Integer;
+      the_holder : String;
+      the_pwd : String;
+      the_miner : String;
+      the_round : String;
+      curr_miner : String;
+      my_ttc : Double;
+      miner_ttc : Double;
+      unlock_count : Integer;
+
+      can_moveVote : Boolean;
+
+      rpcip,rpcport,gasPrice : String;
+
+      err_msg : String;
+
+
+
+      localNeedEncrypt: Boolean;
+
+       const
+         wei = 1000000000000000000;
+         one_wei = 1000000000;
+  end;
+
+implementation
+   uses
+      uMain;
+
+{ TVoteForJnA }
+
+function MySortProc(List: TStringList; Index1, Index2: integer): integer;
+var
+  Value1, Value2: Double;
+begin
+ // Value1 := StrToInt(List[Index1]);
+ // Value2 := StrToInt(List[Index2]);
+  Value1 := StrToFloat(List.Values[List.Names[Index1]]);
+  Value2 := StrToFloat(List.Values[List.Names[Index2]]);
+  //List.Values[List.Names[Index1]]
+  if Value1 > Value2 then
+    Result := -1
+  else if Value2 > Value1 then
+    Result := 1
+  else
+    Result := 0;
+end;
+
+procedure TVoteForJnA.add_autoVote(aaddr_from, aaddr_to, vote_type: String;
+  avote, attc: double);
+var
+  aconn : Tmyconnection;
+  aquery : TMyquery;
+begin
+
+  try
+     aconn := tmyconnection.Create(nil);
+    try
+       aConn.Close;
+       aconn.Options.UseUnicode := true;
+       aConn.Server := fmMain.edt_host.text;
+       aConn.Port := fmMain.spin_port.Value;
+       aConn.Username := fmMain.edt_username.text;
+       aConn.Password := fmMain.edt_password.text;
+       aConn.Database := fmMain.edt_database.text;
+       aConn.LoginPrompt := False;
+       aConn.Open;
+     if aconn.Connected then
+      begin
+         aquery := TMyquery.Create(nil);
+         aquery.Connection := aconn;
+         try
+            with aquery do
+              begin
+                close;
+                sql.Clear;
+                sql.Add('Insert into ttc_auto_vote ');
+                sql.Add('(addr_from,addr_to,date_added,vote_timestamp, ');
+                sql.Add(' addr_to_votes,vote_type,my_ttc) ');
+                sql.Add('VALUES ');
+                sql.Add('(:addr_from,:addr_to,:date_added,:vote_timestamp, ');
+                sql.Add(' :addr_to_votes,:vote_type,:my_ttc) ');
+                ParamByName('addr_from').asstring := aaddr_from;
+                ParamByName('addr_to').asstring := aaddr_to;
+                ParamByName('date_added').asdate := dateof(now);
+                ParamByName('vote_timestamp').asdatetime := now;
+                ParamByName('addr_to_votes').asfloat := avote;
+                ParamByName('vote_type').asstring := vote_type;
+                ParamByName('my_ttc').asfloat := attc;
+                execsql;
+              end;
+         finally
+           aquery.Free;
+         end;
+
+      end;
+
+    finally
+      aconn.free;
+    end;
+  except on e : exception do
+    begin
+     err_msg := e.Message;
+    end;
+
+  end;
+
+end;
+
+constructor TVoteForJnA.Create(voter_addr,holder,apwd,arnd,aminer: String;
+                  voter_jump_time: Integer);
+begin
+  inherited Create(False);
+  FreeOnTerminate := True;
+  FTickEvent := CreateEvent(nil, True, False, nil);
+  the_addr := voter_addr;
+  the_jump_time := voter_jump_time;
+  the_holder := holder;
+  the_pwd := Decrypt(apwd);
+  the_miner := aminer;
+  the_round := arnd;
+
+
+end;
+
+function TVoteForJnA.Decrypt(aStr: String): String;
+begin
+  result := fmmain.LbRijndael1.DecryptString(aStr);
+end;
+
+destructor TVoteForJnA.Destroy;
+begin
+  CloseHandle(FTickEvent);
+  inherited;
+end;
+
+
+
+procedure TVoteForJnA.Execute;
+var
+  atrimMiner : String;
+begin
+  while not Terminated do
+  begin
+    if WaitForSingleObject(FTickEvent, the_jump_time) = WAIT_TIMEOUT then
+    begin
+      get_rep_info;
+
+      if the_round = '9' then
+       begin
+          atrimMiner := AnsiLeftStr(the_miner, 6)+  '...'+AnsiRightStr(the_miner, 6);
+          Synchronize(procedure
+            begin
+             { fmMain.memo1.Lines.add(the_holder + ' !!! Move To :-> ' +
+                       AnsiLeftStr(the_miner, 10)+  '...'+AnsiRightStr(the_miner, 10)
+                                      );  }
+
+              fmMain.Memo1.Lines.Add(''+the_holder+''#9'Move To'#9''+
+                                  atrimMiner+''#9''+the_round+'');
+
+              fmMain.Memo1.Perform( EM_SETTABSTOPS, 4, LongInt(@fmMain.tabs));
+              fmMain.Memo1.Refresh;
+            end
+          );
+         { if unlock_addr(the_addr,the_pwd) then
+          begin
+            send_vote(the_addr,the_miner,the_pwd);
+            lock_addr(the_addr);
+            my_ttc := get_ttcREST(the_addr);
+            add_autoVote(the_addr,the_miner,'Before Tier',0,my_ttc);
+          end; }
+       end
+       else
+       begin
+          my_ttc := get_ttcREST(the_addr);
+          get_curr_miner;
+          get_miner_with_low_votes;
+
+          Synchronize(procedure
+            begin
+             { fmMain.memo1.Lines.add(the_holder + ' !!! Vote For :-> ' +
+                                      the_miner);  }
+              fmMain.Memo1.Lines.Add(''+the_holder+''#9'Move To'#9''+
+                                  atrimMiner+''#9''+the_round+'');
+
+              fmMain.Memo1.Perform( EM_SETTABSTOPS, 4, LongInt(@fmMain.tabs));
+              fmMain.Memo1.Refresh;
+            end
+          );
+
+         { if can_moveVote  then
+           begin
+             if curr_miner = the_miner then
+              begin
+                add_autoVote(the_addr,the_miner,'After Tier',miner_ttc,my_ttc);
+              end
+              else
+              begin
+                if unlock_addr(the_addr,the_pwd) then
+                begin
+                  send_vote(the_addr,the_miner,the_pwd);
+                  lock_addr(the_addr);
+                  my_ttc := get_ttcREST(the_addr);
+                  add_autoVote(the_addr,the_miner,'After Tier',miner_ttc,my_ttc);
+                end;
+              end;
+           end
+           else
+           begin
+              add_autoVote(the_addr,the_miner,'After Tier',miner_ttc,my_ttc);
+           end;  }
+
+
+       end;
+      FinishThreadExecution;
+    end;
+  end;
+
+end;
+
+procedure TVoteForJnA.FinishThreadExecution;
+begin
+    Terminate;
+    SetEvent(FTickEvent);
+end;
+
+procedure TVoteForJnA.get_curr_miner;
+var
+  aconn : Tmyconnection;
+  aquery : TMyquery;
+begin
+
+  try
+     aconn := tmyconnection.Create(nil);
+    try
+       aConn.Close;
+       aconn.Options.UseUnicode := true;
+       aConn.Server := fmMain.edt_host.text;
+       aConn.Port := fmMain.spin_port.Value;
+       aConn.Username := fmMain.edt_username.text;
+       aConn.Password := fmMain.edt_password.text;
+       aConn.Database := fmMain.edt_database.text;
+       aConn.LoginPrompt := False;
+       aConn.Open;
+     if aconn.Connected then
+      begin
+         aquery := TMyquery.Create(nil);
+         aquery.Connection := aconn;
+         try
+            with aquery do
+              begin
+                close;
+                sql.Clear;
+                sql.Add('SELECT addr_to FROM ttc_auto_vote  ');
+                sql.Add('where addr_from like :addr  ');
+                sql.Add('order by id desc limit 1');
+                parambyname('addr').asstring := the_addr;
+                open;
+                if not isempty then
+                 begin
+                   curr_miner := fieldbyname('addr_to').AsString;
+                 end;
+              end;
+         finally
+           aquery.Free;
+         end;
+
+      end;
+
+    finally
+      aconn.free;
+    end;
+  except on e : exception do
+    begin
+      curr_miner := '';
+    end;
+
+  end;
+
+end;
+
+function TVoteForJnA.get_miner_with_low_votes: boolean;
+var
+  json: string;
+  lHTTP: TIdHTTP;
+  lParamList: TStringList;
+  DataToSend : TStringStream;
+  obj, data: TJSONObject;
+  asigners : TJsonArray;
+  i : integer;
+  asigner,output : string;
+  ttc_signers : Tstringlist;
+  ttc_tally : Tstringlist;
+  imine,lowmine : string;
+
+  //
+  tally: TJSONObject;
+  aaddr,avotes : string;
+  dbl_votes : extended;
+  Index,arow: Integer;
+  //
+
+  miner_votes : double;
+  vote_diff : double;
+  imine_vote : double;
+  lowest_mine : double;
+begin
+   result := false;
+   try
+    ttc_signers := Tstringlist.Create;
+    ttc_tally := Tstringlist.Create;
+    //GET SIGNERS
+    ttc_signers.Clear;
+      json := sLineBreak  +
+              ' {' + sLineBreak  +
+              ' "jsonrpc":"2.0",' + sLineBreak  +
+              ' "method":"alien_getSnapshot", ' + sLineBreak  +
+              '   "params":[],' + sLineBreak  +
+              ' "id":67}' ;
+       DataToSend := TStringStream.Create(json, TEncoding.UTF8);
+       lParamList := TStringList.Create;
+       lParamList.Add(json);
+      try
+        lHTTP := TIdHTTP.Create(nil);
+        lHTTP.request.useragent := 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)';
+        try
+          lHTTP.Request.ContentType := 'application/json';
+          output := lHTTP.Post('http://rpc-tokyo.ttcnet.io', DataToSend);
+        finally
+          lHTTP.Free;
+        end;
+      finally
+        lParamList.Free;
+        DataToSend.Free;
+      end;
+      obj := TJSONObject.ParseJSONValue(output) as TJSONObject;
+      try
+         data := obj.Values['result'] as TJSONObject;
+         try
+           asigners := data.Values['signers'] as TJsonArray;
+           try
+             for i := 0 to asigners.Size-1 do
+              begin
+                  asigner :=  trim(StringReplace(asigners.Get(i).ToString,'"','',[rfReplaceAll]));
+                  ttc_signers.Add(asigner);
+              end;
+           finally
+           end;
+         finally
+         end;
+      finally
+        obj.free;
+      end;
+
+      //GET tally
+        ttc_tally.Clear;
+        json := sLineBreak  +
+                ' {' + sLineBreak  +
+                ' "jsonrpc":"2.0",' + sLineBreak  +
+                ' "method":"alien_getSnapshot", ' + sLineBreak  +
+                '   "params":[],' + sLineBreak  +
+                ' "id":67}' ;
+         DataToSend := TStringStream.Create(json, TEncoding.UTF8);
+         lParamList := TStringList.Create;
+         lParamList.Add(json);
+        try
+          lHTTP := TIdHTTP.Create(nil);
+          lHTTP.request.useragent := 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)';
+          try
+            lHTTP.Request.ContentType := 'application/json';
+            output := lHTTP.Post('http://rpc-tokyo.ttcnet.io', DataToSend);
+          finally
+            lHTTP.Free;
+          end;
+        finally
+          lParamList.Free;
+          DataToSend.Free;
+        end;
+
+
+        obj := TJSONObject.ParseJSONValue(output) as TJSONObject;
+        try
+           data := obj.Values['result'] as TJSONObject;
+           try
+             tally := data.Values['tally'] as TJSONObject;
+             try
+               arow := 1;
+               for I := 0 to tally.size-1 do
+               begin
+                 aaddr := tally.Get(i).JsonString.ToString;
+                 aaddr := trim(StringReplace(aaddr,'"','',[rfReplaceAll]));
+                 ttc_signers.Sort;
+                 if ttc_signers.Find(aaddr, Index) then
+                  begin
+                     avotes := tally.Get(i).JsonValue.ToString;
+                     dbl_votes := (strtofloat(avotes)/wei);
+                     ttc_tally.values[aaddr] :=  dbl_votes.ToString;
+                     arow := arow +1;
+                  end;
+               end;
+             finally
+             end;
+           finally
+           end;
+        finally
+           obj.Free;
+        end;
+
+     // Process Tally Data
+      ttc_tally.CustomSort(MySortProc);
+      imine :=   ttc_tally.Values[curr_miner];
+      the_miner :=  ttc_tally.Names[ttc_tally.Count-1];
+      lowmine := ttc_tally.Values[the_miner];
+      if imine <> '' then
+       begin
+           imine_vote := strtofloat(imine);
+           lowest_mine := strtofloat(lowmine);
+           vote_diff := imine_vote - lowest_mine;
+
+           if vote_diff > my_ttc then
+            begin
+              can_movevote := true;
+            end
+            else
+            begin
+               can_movevote := false;
+               the_miner := curr_miner;
+            end;
+
+       end
+       else
+       begin
+         can_movevote := true;
+       end;
+
+       if the_miner = '' then
+       begin
+         the_miner :=  ttc_tally.Names[ttc_tally.Count-2];
+         miner_ttc :=  strtofloat(ttc_tally.Values[ttc_tally.Names[ttc_tally.Count-2]]);
+         result := true;
+       end
+       else
+       begin
+         miner_ttc :=  strtofloat(ttc_tally.Values[ttc_tally.Names[ttc_tally.Count-1]]);
+         result := true;
+       end;
+
+
+   except on e : exception do
+    begin
+      result := false;
+      err_msg := e.Message;
+    end;
+
+   end;
+end;
+
+procedure TVoteForJnA.get_rep_info;
+var
+  aconn : Tmyconnection;
+  aquery : TMyquery;
+begin
+
+  try
+     rpcip := '52.79.243.253';
+     rpcport := '5000';
+     gasprice := 'BA43B7400';
+     aconn := tmyconnection.Create(nil);
+    try
+       aConn.Close;
+       aconn.Options.UseUnicode := true;
+       aConn.Server := fmMain.edt_host.text;
+       aConn.Port := fmMain.spin_port.Value;
+       aConn.Username := fmMain.edt_username.text;
+       aConn.Password := fmMain.edt_password.text;
+       aConn.Database := fmMain.edt_database.text;
+       aConn.LoginPrompt := False;
+       aConn.Open;
+     if aconn.Connected then
+      begin
+         aquery := TMyquery.Create(nil);
+         aquery.Connection := aconn;
+         try
+            with aquery do
+              begin
+                close;
+                sql.Clear;
+                sql.Add('select jnaip,jnaport,gasprice from jnarpc ');
+                sql.Add('where usecase like :usecase order by id desc limit 1 ');
+                parambyname('usecase').asstring := 'Server';
+                open;
+                if not isempty then
+                 begin
+                   rpcip := fieldbyname('jnaip').AsString;
+                   rpcport := fieldbyname('jnaport').AsInteger.ToString;
+                   gasPrice := fieldbyname('gasprice').AsString;
+                 end;
+              end;
+         finally
+           aquery.Free;
+         end;
+
+      end;
+
+    finally
+      aconn.free;
+    end;
+  except on e : exception do
+    begin
+     rpcip := '52.79.243.253';
+     rpcport := '5000';
+     gasprice := 'BA43B7400';
+    end;
+
+  end;
+
+end;
+
+function TVoteForJnA.get_ttcREST(aadrr: String): Double;
+var
+  LIdHTTP: TIdHTTP;
+  resp: TMemoryStream;
+  lReader: TStringReader;
+  webdata : string;
+  str_balance : string;
+  ether_balance : double;
+  wei_balance : extended;
+  obj, data: TJSONObject;
+begin
+   try
+         result := 0.0;
+         LIdHTTP:= TIdHTTP.Create(nil);
+         LIdHTTP.request.useragent := 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)';
+         resp := TMemoryStream.Create;
+                    try
+                      lReader := TStringReader.Create(LIdHTTP.Get('https://api.ttcnet.io/api/wallet/address/'
+                                  +aadrr));
+                          while lReader.Peek > 0 do
+                          begin
+                            webdata := lReader.ReadLine;
+                          end;
+                    finally
+                      LIdHTTP.Free;
+                      resp.Free;
+                    end;
+           obj := TJSONObject.ParseJSONValue(webdata) as TJSONObject;
+          try
+            data := obj.Values['data'] as TJSONObject;
+            str_balance := data.Values['balance'].Value;
+            wei_balance := strtofloat(trim(str_balance));
+            ether_balance :=  wei_balance/wei;
+            result :=  ether_balance;
+          finally
+            obj.Free;
+          end;
+
+   except on e : exception do
+     begin
+       result := 0;
+       err_msg := e.Message;
+     end;
+
+   end;
+end;
+
+function TVoteForJnA.lock_addr(aaddr: String): Boolean;
+var
+  json: string;
+  lHTTP: TIdHTTP;
+  lParamList: TStringList;
+  output:string;
+  DataToSend : TStringStream;
+  loopaddr : String;
+begin
+      loopaddr := aaddr;
+      json :=    sLineBreak  +
+                 ' {' + sLineBreak  +
+                 ' "jsonrpc":"2.0",' + sLineBreak  +
+                 ' "method":"personal_lockAccount",' + sLineBreak  +
+                 ' "params":[' + sLineBreak  +
+                 ' "'+aaddr+'"],"id":67},';
+       DataToSend := TStringStream.Create(json, TEncoding.UTF8);
+      try
+        lHTTP := TIdHTTP.Create(nil);
+        lHTTP.request.useragent := 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)';
+        try
+          lHTTP.Request.ContentType := 'application/json';
+          output := lHTTP.Post('http://'+rpcip+':'+rpcport+'/', DataToSend);
+
+        finally
+          freeandnil(lHTTP);
+        end;
+      finally
+        freeandnil(DataToSend);
+      end;
+
+       json := output;
+        if containstext(json,'error') then
+          begin
+            if unlock_count = 4 then
+             begin
+               result := false;
+               unlock_count := 0;
+               exit;
+             end;
+            lock_addr(loopaddr);
+            unlock_count := unlock_count + 1;
+          end
+          else
+          begin
+            result := true;
+            unlock_count := 0;
+          end;
+end;
+
+procedure TVoteForJnA.moveVote;
+begin
+     //
+end;
+{
+function TVoteForJnA.MySortProc(List: TStringList; Index1,
+  Index2: integer): integer;
+var
+  Value1, Value2: Double;
+begin
+ // Value1 := StrToInt(List[Index1]);
+ // Value2 := StrToInt(List[Index2]);
+  Value1 := StrToFloat(List.Values[List.Names[Index1]]);
+  Value2 := StrToFloat(List.Values[List.Names[Index2]]);
+  //List.Values[List.Names[Index1]]
+  if Value1 > Value2 then
+    Result := -1
+  else if Value2 > Value1 then
+    Result := 1
+  else
+    Result := 0;
+end;  }
+
+function TVoteForJnA.send_vote(fromaddr, toaddr, apwd: String): Boolean;
+var
+  json: string;
+  lHTTP: TIdHTTP;
+  lParamList: TStringList;
+  output:string;
+  DataToSend : TStringStream;
+  loopaddr_from,loopaddr_to,loop_pwd : String;
+begin
+   result := false;
+   try
+      loopaddr_from := fromaddr;
+      loopaddr_to := toaddr;
+      loop_pwd := apwd;
+      json :=    sLineBreak  +
+                 ' {' + sLineBreak  +
+                 ' "jsonrpc":"2.0",' + sLineBreak  +
+                 ' "method":"eth_sendTransaction",' + sLineBreak  +
+                 ' "params":[' + sLineBreak  +
+                 ' {"from":"'+fromaddr+'",' + sLineBreak  +
+                 ' "to":"'+toaddr+'",' + sLineBreak  +
+                 ' "gasPrice":"0x'+gasPrice+'",' + sLineBreak  +    //BA43B7400  9184e72a000
+                 ' "gas":"0x124f80",' + sLineBreak  +    //124F80    76c0
+                 ' "value":"0x0",' + sLineBreak  +
+                '  "data":"0x75666f3a313a6576656e743a766f7465"}],' + sLineBreak  +
+                 '  "id":67}';
+       DataToSend := TStringStream.Create(json, TEncoding.UTF8);
+      try
+
+        lHTTP := TIdHTTP.Create(nil);
+        lHTTP.request.useragent := 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)';
+        try
+
+          lHTTP.Request.ContentType := 'application/json';
+          output := lHTTP.Post('http://'+rpcip+':'+rpcport+'/', DataToSend);
+
+        finally
+          freeandnil(lHTTP);
+        end;
+      finally
+         freeandnil(DataToSend);
+      end;
+      json := output;
+
+     if containstext(json,'error') then
+      begin
+        if unlock_count = 4 then
+         begin
+           result := false;
+           unlock_count := 0;
+           exit;
+         end;
+        send_vote(loopaddr_from,loopaddr_to,loop_pwd);
+        unlock_count := unlock_count + 1;
+      end
+      else
+      begin
+        result := true;
+        unlock_count := 0;
+      end;
+
+   except on e : exception do
+     begin
+       err_msg := e.Message;
+     end;
+
+   end;
+end;
+
+function TVoteForJnA.unlock_addr(aaddr, apwd: String): boolean;
+var
+  json: string;
+  lHTTP: TIdHTTP;
+  lParamList: TStringList;
+  output:string;
+  DataToSend : TStringStream;
+  loopaddr,looppwd : String;
+begin
+   result := false;
+  loopaddr := aaddr;
+  looppwd := apwd;
+  json :=    sLineBreak  +
+             ' {' + sLineBreak  +
+             ' "jsonrpc":"2.0",' + sLineBreak  +
+             ' "method":"personal_unlockAccount",' + sLineBreak  +
+             ' "params":[' + sLineBreak  +
+             ' "'+aaddr+'",' + sLineBreak  +
+             ' "'+apwd+'"],"id":67},';
+   DataToSend := TStringStream.Create(json, TEncoding.UTF8);
+  try
+    lHTTP := TIdHTTP.Create(nil);
+    lHTTP.request.useragent := 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; MAAU)';
+    try
+      lHTTP.Request.ContentType := 'application/json';
+      output := lHTTP.Post('http://'+rpcip+':'+rpcport+'/', DataToSend);
+
+    finally
+      freeandnil(lHTTP);
+    end;
+  finally
+    freeandnil(DataToSend);
+  end;
+
+   json := output;
+   if containstext(json,'error') then
+    begin
+      if unlock_count = 4 then
+       begin
+         result := false;
+         unlock_count := 0;
+         exit;
+       end;
+      unlock_addr(loopaddr,looppwd);
+      unlock_count := unlock_count + 1;
+    end
+    else
+    begin
+      result := true;
+      unlock_count := 0;
+    end;
+end;
+
+function TVoteForJnA.vote_sent(myaddr, mypwd, repaddr: String): Boolean;
+begin
+
+end;
+
+end.
