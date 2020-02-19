@@ -19,7 +19,8 @@ uses
     System.JSON,
   FMX.Objects, FMX.ScrollBox, FMX.Memo, FMX.StdCtrls, FMX.Controls.Presentation,
   FMX.Edit, Data.DB, MemDS, DBAccess, MyAccess, IdIOHandler, IdIOHandlerSocket,
-  IdIOHandlerStack, IdSSL, IdSSLOpenSSL, System.Rtti, FMX.Grid.Style, FMX.Grid;
+  IdIOHandlerStack, IdSSL, IdSSLOpenSSL, System.Rtti, FMX.Grid.Style, FMX.Grid,
+  FMX.Layouts;
 
 type
   Tfmhome = class(TForm)
@@ -71,6 +72,8 @@ type
     Text9: TText;
     txt_day: TText;
     Text11: TText;
+    Layout1: TLayout;
+    aAnimate: TAniIndicator;
     procedure btn_checkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure chk_seepwdChange(Sender: TObject);
@@ -143,6 +146,7 @@ begin
             chk_ismyaddr.Visible := true;
             en_pwd := fmjnaclient.Encrypt(edt_pwd1.text);
             my_addr := aaddr;
+            fmjnaclient.save_addrtoDevice(fmjnaclient.edtname.text);
           end;
       end
       else if check_status = 'unlock' then
@@ -197,11 +201,23 @@ begin
 end;
 
 procedure Tfmhome.btn_mypageClick(Sender: TObject);
+var
+
+  aCapitalTask : Itask;
 begin
-    btn_mypage.Enabled := false;
-   // updateUserInfo;
-   // updateCapital;
-    tab_holder.ActiveTab := tab_info;
+    aCapitalTask := Ttask.create(procedure()
+     begin
+       aanimate.enabled := true;
+       btn_mypage.Enabled := false;
+       updateUserInfo;
+       updateCapital;
+       tab_holder.ActiveTab := tab_info;
+     end);
+    aCapitalTask.Start;
+
+
+
+
 end;
 
 procedure Tfmhome.btn_startautoVoteClick(Sender: TObject);
@@ -216,8 +232,6 @@ begin
   else
   begin
   end;
-
-
 end;
 
 procedure Tfmhome.btn_stopVoteClick(Sender: TObject);
@@ -241,8 +255,7 @@ begin
      begin
        codebase.update_pwd(my_addr,en_pwd);
        fmjnaclient.save_addrtoDevice(fmjnaclient.edtname.text);
-       updateUserInfo;
-         updateCapital;
+       aAnimate.Visible := true;
        btn_mypage.Visible := true;
      end
      else
@@ -278,14 +291,8 @@ begin
 end;
 
 procedure Tfmhome.FormShow(Sender: TObject);
-var
-  aRec : TRectangle;
 begin
-    aRec := TRectangle((dataG).FindStyleResource('recGrid'));
-    if Assigned(aRec) then
-    begin
-      aRec.Width := dataG.Width;
-    end;
+    getAirdropHist;
 end;
 
 procedure Tfmhome.getAirdropHist;
@@ -606,7 +613,7 @@ begin
                   end;
               except on e : exception do
               begin
-               // his_capital := e.Message;
+                his_capital := e.Message;
               end;
               end;
              TThread.Synchronize(TThread.CurrentThread,procedure()
@@ -701,6 +708,9 @@ begin
                         aserverVote := fieldbyname('can_serverVote').asstring;
                         aeventStatus  := fieldbyname('event_status').asstring;
                         //이벤트 완료 건수 :
+
+                      if not isEmpty then
+                       begin
                        TThread.Synchronize(TThread.CurrentThread,procedure()
                           begin
                            fmHome.txt_airdrop.text := fieldbyname('airdropSum').asstring + ' TTC';
@@ -735,6 +745,7 @@ begin
                                 txt_eventState.Text := '미참석';
                              end;
                           end);
+                       end;
 
                         close;
                         sql.Clear;

@@ -7,6 +7,7 @@ uses
   Strutils,
   ucodebasejna,
   System.IOutils,
+  system.threading,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, LbCipher,
   LbClass, FMX.ScrollBox, FMX.Memo, FMX.StdCtrls, FMX.Controls.Presentation,
   FMX.Edit, FMX.Objects, Data.DB, MemDS, DBAccess, MyAccess, IdIOHandler,
@@ -23,7 +24,6 @@ type
     Image1: TImage;
     procedure FormCreate(Sender: TObject);
     procedure btn_enterClick(Sender: TObject);
-    procedure edtNameClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
     { Private declarations }
@@ -37,6 +37,8 @@ type
      function loaad_addrfromDevice : String;
     var
       localNeedEncrypt: Boolean;
+      theconn : TMyconnection;
+      isConnected : Boolean;
   end;
 
 var
@@ -54,8 +56,9 @@ implementation
 
 procedure Tfmjnaclient.btn_enterClick(Sender: TObject);
 var
-  myconn : TMyconnection;
-  aquery : TMyquery;
+ // myconn : TMyconnection;
+ // aquery : TMyquery;
+  aCapitalTask : Itask;
 begin
    if edtname.text = '' then
     begin
@@ -63,96 +66,90 @@ begin
       exit;
     end;
     btn_enter.enabled := false;
-    myconn := tmyconnection.Create(self);
-    try
-      if  codebase.is_connected_toAchuDB(myconn) then
-       begin
-         aquery := tmyquery.Create(self);
-         aquery.Connection := myconn;
-        if codebase.logged_IN(edtname.text,aquery) then
-         begin
-          // ShowMessage(arec.my_pwd);
-           if codebase.my_pwd <> '' then
-            begin
-              fmHome := Tfmhome.Create(self);
-              InputBox('비밀번호',#31 + '비밀번호','',
-                procedure(const AResult: TModalResult; const AValue: string)
+    aCapitalTask := Ttask.create(procedure()
+      var
+      // myconn : TMyconnection;
+       aquery : TMyquery;
+     begin
+       try
+       // myconn := tmyconnection.Create(self);
+        try
+          if  isConnected then
+           begin
+             aquery := tmyquery.Create(self);
+             aquery.Connection := theconn;
+            if codebase.logged_IN(edtname.text,aquery) then
+             begin
+              // ShowMessage(arec.my_pwd);
+               if codebase.my_pwd <> '' then
                 begin
-                 case AResult of
-                { Detect which button was pushed and show a different message }
-                   mrOk:
-                    begin
-                    // AValue is the result of the inputbox dialog
-                     if Avalue = Decrypt(codebase.my_pwd) then
-                     begin
-                       save_addrtoDevice(edtname.text);
-                       fmHome.check_status := 'user';
-                       fmHome.tab_holder.ActiveTab := fmHome.tab_info;
-                       fmhome.txt_name.text := codebase.my_name;
-                       fmhome.my_addr := codebase.my_addr;
-                       fmhome.updateUserInfo;
-
-                       fmHome.show;
-                       hide;
-                     end
-                     else
-                     begin
-
-                     end;
-                     //btn_enter.Text:= AValue;
-                    end;
-                    mrCancel:
-                    begin
-                    end;
-                 end;
+                  // fmHome := Tfmhome.Create(self);
+                   save_addrtoDevice(edtname.text);
+                   fmHome.check_status := 'user';
+                   fmHome.tab_holder.ActiveTab := fmHome.tab_info;
+                   fmhome.my_addr := codebase.my_addr;
+                   fmHome.updateUserInfo;
+                   fmHome.updateCapital;
+                   fmHome.show;
                 end
-                );
-            end
-            else if (codebase.my_pwd = '') and (codebase.can_signIN = 'YES') then
-            begin
-               fmHome := Tfmhome.Create(self);
-               fmHome.check_status := 'unlock';
-               fmHome.tab_holder.ActiveTab := fmHome.tab_manage;
-               fmHome.mem_pk.enabled := false;
-               fmHome.edt_name.text := codebase.my_name;
-               fmHome.edt_name.enabled := false;
-               fmhome.my_addr := codebase.my_addr;
-               fmHome.txt_info.Text := '*비밀번호 입력시 확인 하세요!';
-               fmhome.txt_info.Visible := true;
-               fmHome.show;
-            end
-            else if (codebase.my_pwd = '') and (codebase.can_signIN = 'NO') then
-            begin
-               fmHome := Tfmhome.Create(self);
-               fmHome.tab_holder.ActiveTab := fmHome.tab_manage;
-               fmHome.mem_pk.enabled := true;
-               fmHome.edt_name.text := codebase.my_name;
-               fmHome.edt_name.enabled := false;
-               fmHome.check_status := 'import';
-               fmHome.txt_info.Text := '*개인 키 랑 비밀번호 입력시 확인 하세요!';
-               fmhome.txt_info.Visible := true;
-               fmHome.show;
-            end;
-         end
-         else
-         begin
-               fmHome.txt_info.Text := '*정보 다 입력 하세요!';
-               fmHome := Tfmhome.Create(self);
-               fmHome.check_status := 'join';
-               fmHome.show;
+                else if (codebase.my_pwd = '') and (codebase.can_signIN = 'YES') then
+                begin
+                  // fmHome := Tfmhome.Create(self);
+                   fmHome.check_status := 'unlock';
+                   fmHome.tab_holder.ActiveTab := fmHome.tab_manage;
+                   fmHome.mem_pk.enabled := false;
+                   fmHome.edt_name.text := codebase.my_name;
+                   fmHome.edt_name.enabled := false;
+                   fmhome.my_addr := codebase.my_addr;
+                   fmHome.txt_info.Text := '*비밀번호를 입력하고 확인버튼을 누르세요!';
+                   fmhome.txt_info.Visible := true;
+                   fmHome.show;
+                end
+                else if (codebase.my_pwd = '') and (codebase.can_signIN = 'NO') then
+                begin
+                  // fmHome := Tfmhome.Create(self);
+                   fmHome.tab_holder.ActiveTab := fmHome.tab_manage;
+                   fmHome.mem_pk.enabled := true;
+                   fmHome.edt_name.text := codebase.my_name;
+                   fmHome.edt_name.enabled := false;
+                   fmHome.check_status := 'import';
+                   fmHome.txt_info.Text := '*개인키와 비밀번호를 입력하고 확인버튼을 누르세요!';
+                   fmhome.txt_info.Visible := true;
+                   fmHome.show;
+                   //
+                end;
+             end
+             else
+             begin
+                  // fmHome := Tfmhome.Create(self);
+                   fmHome.txt_info.Text := '*정보 다 입력 하세요!';
+                   fmHome.check_status := 'join';
+                   fmHome.show;
 
-         end;
+             end;
 
-       end
-       else
-       begin
-         ShowMessage('NOT Connected');
+           end
+           else
+           begin
+             ShowMessage('NOT Connected');
+           end;
+         finally
+         // myconn.free;
+        end;
+       except on e : exception do
+        begin
+          btn_enter.enabled := true;
+        end;
+
        end;
-     finally
-      myconn.free;
-    end;
-      btn_enter.enabled := true;
+
+     end);
+    aCapitalTask.Start;
+    //  btn_enter.enabled := true;
 end;
+
+
+
 
 function Tfmjnaclient.Decrypt(aStr: String): String;
 begin
@@ -161,31 +158,6 @@ begin
     Result := LbRijndael1.DecryptString(aStr)
   else
     localNeedEncrypt := True;
-end;
-
-procedure Tfmjnaclient.edtNameClick(Sender: TObject);
-var
-InputString: string;
-begin
-   { InputString:= FMX.Dialogs.InputBox('Password', 'Password', 'Enter Password');
-    btn_enter.Text:= InputString;
-
-       InputBox('비밀번호',#31 + '비밀번호','',
-        procedure(const AResult: TModalResult; const AValue: string)
-        begin
-         case AResult of
-        //Detect which button was pushed and show a different message
-           mrOk:
-            begin
-            // AValue is the result of the inputbox dialog
-            btn_enter.Text:= AValue;
-            end;
-            mrCancel:
-            begin
-            end;
-         end;
-        end
-        );    }
 end;
 
 function Tfmjnaclient.Encrypt(aStr: String): String;
@@ -209,6 +181,16 @@ end;
 procedure Tfmjnaclient.FormShow(Sender: TObject);
 begin
    edtname.text := loaad_addrfromDevice;
+   theconn := tmyconnection.Create(self);
+  if codebase.is_connected_toAchuDB(theconn) then
+   begin
+     isConnected := true;
+     if edtname.Text <> '' then
+      begin
+        // fmhome.updateUserInfo;
+        // fmhome.updateCapital;
+      end;
+   end;
 end;
 
 function Tfmjnaclient.loaad_addrfromDevice: String;
@@ -255,3 +237,37 @@ begin
 end;
 
 end.
+
+
+             { InputBox('비밀번호',#31 + '비밀번호','',
+                procedure(const AResult: TModalResult; const AValue: string)
+                begin
+                 case AResult of
+                // Detect which button was pushed and show a different message
+                   mrOk:
+                    begin
+                    // AValue is the result of the inputbox dialog
+                     if Avalue = Decrypt(codebase.my_pwd) then
+                     begin
+                       save_addrtoDevice(edtname.text);
+                       fmHome.check_status := 'user';
+                       fmHome.tab_holder.ActiveTab := fmHome.tab_info;
+                       fmhome.txt_name.text := codebase.my_name;
+                       fmhome.my_addr := codebase.my_addr;
+                      // fmhome.updateUserInfo;
+
+                       fmHome.show;
+                       //hide;
+                     end
+                     else
+                     begin
+
+                     end;
+                     //btn_enter.Text:= AValue;
+                    end;
+                    mrCancel:
+                    begin
+                    end;
+                 end;
+                end
+                );   }

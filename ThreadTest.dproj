@@ -105,7 +105,6 @@
         </DelphiCompile>
         <DCCReference Include="uMain.pas">
             <Form>fmMain</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="utimerThread.pas"/>
         <DCCReference Include="uvoteForJnA.pas"/>

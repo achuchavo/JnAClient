@@ -27,11 +27,12 @@ interface
     destructor Destroy; override;
     procedure FinishThreadExecution;
     procedure moveVote_toJna(around : Integer);
+    procedure enhannceVote(aaddr,around : String);
 
     function aloopRound : String;
     var
       aText : String;
-      isRoundNine,isRoundZero : Boolean;
+      isRoundNine,isRoundZero,isEnhance : Boolean;
       voters_list : TStringlist;
   end;
 implementation
@@ -115,113 +116,25 @@ begin
   atext := someText;
 end;
 
+
+
 destructor TTimerThread.Destroy;
 begin
   CloseHandle(FTickEvent);
   inherited;
 end;
 
-procedure TTimerThread.Execute;
+
+procedure TTimerThread.enhannceVote(aaddr,around: String);
 var
-  aRound : String;
-  i : Integer;
-  aaddr,aenhance : String;
-begin
-  voters_list := TStringlist.Create;
-  voters_list.Duplicates := dupAccept;
-  while not Terminated do
-  begin
-    if WaitForSingleObject(FTickEvent, 1000) = WAIT_TIMEOUT then
-    begin
-          aRound := aloopRound;
-          Synchronize(procedure
-                      begin
-                       // fmMain.memo2.Lines.Add(aRound);  //Current Mining Round :
-                        fmMain.lbl_round.caption := 'Current Mining Round :' +aRound;
-                      end
-                     );
-          if aRound = '0.9' then
-          begin
-            isRoundZero := false;
-            if not isRoundNine then
-             begin
-             // voters_list.Clear;
-              Synchronize(procedure
-                            begin
-                              fmMain.lbl_info.Caption := 'Move Vote! [Round = 0.9] '+
-                              datetimetostr(now);
-                              fmMain.memo1.clear;
-                            end
-                           );
-              isRoundNine := true;
-              moveVote_toJna(9);
-
-             end;
-          end
-          else if aRound = '0.0' then
-          begin
-           isRoundNine := false;
-            if not isRoundZero then
-            begin
-
-              Synchronize(procedure
-                            begin
-                              fmMain.lbl_info.Caption := 'Vote for Rep! [Round = 0.0] '+
-                              datetimetostr(now);
-                              fmMain.memo1.clear;
-                            end
-                           );
-              isRoundZero := True;
-              moveVote_toJna(0);
-            end;
-
-          end
-          else
-          begin
-            isRoundNine := false;
-            isRoundZero := false;
-            if voters_list.Count > 0 then
-            begin
-              for I := voters_list.Count-1 downto 0 do
-               begin
-                  aaddr :=  voters_list.Names[i];
-                  aenhance :=  voters_list.Values[voters_list.Names[i]];
-                  if aenhance = aRound then
-                   begin
-                        Synchronize(procedure
-                                      begin
-                                        fmMain.memo3.Lines.Add(aaddr);
-                                        fmMain.memo3.Lines.Add(aenhance);
-                                        fmMain.memo3.Lines.Add('---------');
-                                      end
-                                     );
-                        voters_list.Delete(i);
-                   end;
-               end;
-            end;
-          end;
-    end;
-  end;
-
-end;
-
-procedure TTimerThread.FinishThreadExecution;
-begin
-  Terminate;
-  SetEvent(FTickEvent);
-end;
-
-procedure TTimerThread.moveVote_toJna(aRound : Integer);
-var
-  nthreads : array of TVoteForJnA;
+  athread : TVoteForJnA;
   i : integer;
   ajump_time : integer;
   aconn : Tmyconnection;
   aquery : TMyquery;
-  aaddr : String;
   aRecCount : Integer;
   arecNo : Integer;
-  aenhance,aholder : String;
+  aenhance,aholder,apwd,aminer : String;
 
 begin
      aconn := TMyconnection.Create(nil);
@@ -245,8 +158,194 @@ begin
               begin
                 close;
                 sql.Clear;
-                sql.Add('select addr,jump,enhance,holder from ttc_auto_voter where can_SignIN like :signin');
-                parambyname('signin').AsString := 'NO';
+                sql.Add('select addr,jump,enhance,holder,pwd,miner from ttc_auto_voter');
+                sql.Add(' where can_serverVote like :can_serverVote');
+                sql.Add(' and addr like :addr');
+                parambyname('can_serverVote').AsString := 'YES';
+                parambyname('addr').AsString := aaddr;
+                open;
+                if not isempty then
+                 begin
+                    aholder := fieldbyname('holder').AsString;
+                    apwd := fieldbyname('pwd').AsString;
+                    aminer := fieldbyname('miner').AsString;
+                    ajump_time := fieldbyname('jump').asinteger * 1000;
+                    athread:= TVoteForJnA.Create(aaddr,aholder,apwd,
+                                         around,aminer,ajump_time );
+                 end;
+
+              end;
+           finally
+             aquery.Free;
+           end;
+        end
+        else
+        begin
+        end;
+       finally
+         aconn.Free;
+       end;
+     except on e : exception do
+       begin
+          Synchronize(procedure
+              begin
+               // fmMain.memo2.Lines.Add(e.message);
+              end
+             );
+       end;
+     end;
+end;
+
+procedure TTimerThread.Execute;
+var
+  aRound : String;
+  i : Integer;
+  aaddr,aenhance : String;
+begin
+  voters_list := TStringlist.Create;
+  voters_list.Duplicates := dupAccept;
+  while not Terminated do
+  begin
+    if WaitForSingleObject(FTickEvent, 2000) = WAIT_TIMEOUT then
+    begin
+          aRound := aloopRound;
+          Synchronize(procedure
+                      begin
+                       // fmMain.memo2.Lines.Add(aRound);  //Current Mining Round :
+                        fmMain.lbl_round.caption := 'Current Mining Round :' +aRound;
+                      end
+                     );
+          if aRound = '0.9' then
+          begin
+            isRoundZero := false;
+            isEnhance := false;
+            if not isRoundNine then
+             begin
+             // voters_list.Clear;
+              Synchronize(procedure
+                            begin
+                              fmMain.lbl_info_hist.Caption := fmMain.lbl_info.Caption;
+                              fmMain.lbl_info.Caption := 'Move Vote! [Round = 0.9] '+
+                              datetimetostr(now);
+                              fmmain.Memo3.Text := fmmain.Memo1.text;
+                              fmMain.memo1.clear;
+                            end
+                           );
+              isRoundNine := true;
+              moveVote_toJna(9);
+
+             end;
+          end
+          else if aRound = '0.0' then
+          begin
+           isRoundNine := false;
+           isEnhance := false;
+            if not isRoundZero then
+            begin
+              Synchronize(procedure
+                            begin
+                              fmMain.lbl_info_hist.Caption := fmMain.lbl_info.Caption;
+                              fmMain.lbl_info.Caption := 'Vote for Rep! [Round = 0.0] '+
+                              datetimetostr(now);
+                              fmmain.Memo3.Text := fmmain.Memo1.text;
+                              fmMain.memo1.clear;
+                            end
+                           );
+              isRoundZero := True;
+              moveVote_toJna(0);
+            end;
+
+          end
+          else
+          begin
+            isRoundNine := false;
+            isRoundZero := false;
+            if not isEnhance then
+             begin
+              Synchronize(procedure
+                            begin
+                            fmMain.lbl_info_hist.Caption := fmMain.lbl_info.Caption;
+                           // fmMain.lbl_info.Caption := 'Enhance Vote! [Round = '+around+'] '+
+                          //  datetimetostr(now);
+                             fmmain.Memo3.Text := fmmain.Memo1.text;
+                             fmMain.memo1.clear;
+                            end
+                           );
+               isEnhance := true;
+             end;
+            if voters_list.Count > 0 then
+            begin
+              for I := voters_list.Count-1 downto 0 do
+               begin
+                  aaddr :=  voters_list.Names[i];
+                  //aenhance is enhance Round
+                  aenhance :=  voters_list.Values[voters_list.Names[i]];
+                  if aenhance = aRound then
+                   begin
+                    enhannceVote(aaddr,aRound);
+                    voters_list.Delete(i);
+                   end;
+               end;
+                 Synchronize(procedure
+                            begin
+                             fmMain.lbl_info_hist.Caption := fmMain.lbl_info.Caption;
+                             fmMain.lbl_info.Caption := 'Enhance Vote! [Round = '+around+'] '+
+                             datetimetostr(now);
+                             if fmmain.Memo1.text <> '' then
+                             fmmain.Memo3.Text := fmmain.Memo1.text;
+                           // fmMain.memo1.clear;
+                            end
+                           );
+            end;
+          end;
+    end;
+  end;
+
+end;
+
+procedure TTimerThread.FinishThreadExecution;
+begin
+  Terminate;
+  SetEvent(FTickEvent);
+end;
+
+procedure TTimerThread.moveVote_toJna(aRound : Integer);
+var
+  nthreads : array of TVoteForJnA;
+  i : integer;
+  ajump_time : integer;
+  aconn : Tmyconnection;
+  aquery : TMyquery;
+  aaddr : String;
+  aRecCount : Integer;
+  arecNo : Integer;
+  aenhance,aholder,apwd,aminer : String;
+
+begin
+     aconn := TMyconnection.Create(nil);
+     try
+      try
+       aConn.Close;
+       aconn.Options.UseUnicode := true;
+       aConn.Server := fmMain.edt_host.text;
+       aConn.Port := fmMain.spin_port.Value;
+       aConn.Username := fmMain.edt_username.text;
+       aConn.Password := fmMain.edt_password.text;
+       aConn.Database := fmMain.edt_database.text;
+       aConn.LoginPrompt := False;
+       aConn.Open;
+       if aconn.Connected then
+        begin
+           aquery := tmyquery.Create(nil);
+           aquery.Connection := aconn;
+           try
+             with aquery do
+              begin
+                close;
+                sql.Clear;
+                sql.Add('select addr,jump,enhance,holder,pwd,miner from ttc_auto_voter');
+                sql.Add(' where can_serverVote like :can_serverVote');
+                parambyname('can_serverVote').AsString := 'YES';
                 open;
                 if not isempty then
                  begin
@@ -258,9 +357,11 @@ begin
                    begin
                     aaddr := fieldbyname('addr').AsString;
                     aholder := fieldbyname('holder').AsString;
+                    apwd := fieldbyname('pwd').AsString;
+                    aminer := fieldbyname('miner').AsString;
                     if around = 9 then
                     begin
-                     ajump_time := 30000;
+                     ajump_time := 25000;
                      aenhance := fieldbyname('enhance').AsString;
                      voters_list.values[aaddr] :=  aenhance;
                     end
@@ -268,7 +369,8 @@ begin
                     begin
                       ajump_time := fieldbyname('jump').asinteger * 1000;
                     end;
-                     nthreads[arecno]:= TVoteForJnA.Create(aaddr,aholder,ajump_time );
+                     nthreads[arecno]:= TVoteForJnA.Create(aaddr,aholder,apwd,
+                                         around.ToString,aminer,ajump_time );
                      next;
                      arecno := arecno + 1;
                    end;
@@ -283,7 +385,7 @@ begin
         begin
           Synchronize(procedure
                         begin
-                          fmMain.memo1.Lines.Add('Not Connected');
+                          fmMain.memo3.Lines.Add('Not Connected');
                         end
                        );
         end;
@@ -292,11 +394,11 @@ begin
        end;
      except on e : exception do
        begin
-                    Synchronize(procedure
-                        begin
-                          fmMain.memo1.Lines.Add(e.message);
-                        end
-                       );
+            Synchronize(procedure
+                begin
+                  fmMain.memo3.Lines.Add(aholder + '  ' + e.message);
+                end
+               );
 
 
        end;

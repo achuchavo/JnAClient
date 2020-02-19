@@ -30,4 +30,5 @@
 	<ActiveMobileDevice>
 		<NoProfile iOSSimulator="iPhone5" Android="ce031713712c80f20c"/>
 	</ActiveMobileDevice>
+	<BT_BuildType>Debug</BT_BuildType>
 </BorlandProject>

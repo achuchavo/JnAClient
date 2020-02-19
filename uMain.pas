@@ -9,13 +9,12 @@ uses
   utimerThread,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
   System.Notification, JvBaseDlg, JvDesktopAlert, Data.DB, DBAccess, MyAccess,
-  MemDS, Vcl.ComCtrls, Vcl.Samples.Spin;
+  MemDS, Vcl.ComCtrls, Vcl.Samples.Spin, LbCipher, LbClass;
 
 type
   TfmMain = class(TForm)
     Memo1: TMemo;
     btn_thread_test: TButton;
-    Memo2: TMemo;
     TrayIcon1: TTrayIcon;
     btn_terminate: TButton;
     jvNot: TJvDesktopAlert;
@@ -41,6 +40,14 @@ type
     btn_stop: TButton;
     lbl_info: TLabel;
     lbl_round: TLabel;
+    LbRijndael1: TLbRijndael;
+    lbl_info_hist: TLabel;
+    pnl_top: TPanel;
+    pnl_bottom: TPanel;
+    pnl_client: TPanel;
+    pnl_client_right: TPanel;
+    Panel1: TPanel;
+    Button2: TButton;
     procedure btn_thread_testClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -51,6 +58,8 @@ type
     procedure edt_db_pwdChange(Sender: TObject);
     procedure btn_connectClick(Sender: TObject);
     procedure btn_stopClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
     procedure OnClose(Sender:TObject);
@@ -60,6 +69,14 @@ type
 
     function isConnected(aConn : TMyConnection) : Boolean;
     procedure show_notif(aheader,amsg : String);
+
+    //open one instance
+   // procedure WMRestoreApp(var Msg: TMessage);
+
+    var
+
+      tabs: Array [0..2] of Integer;
+      WM_FINDINSTANCE: Integer;
 
 var
    FTimerThread: TTimerThread;
@@ -97,23 +114,35 @@ end;
 
 procedure TfmMain.btn_stopClick(Sender: TObject);
 begin
-    btn_stop.Enabled := false;
-    btn_thread_test.Enabled := true;
-     if Assigned(FTimerThread) then
-    FTimerThread.FinishThreadExecution;
+  if MessageDlg('End Auto Vote?' , mtConfirmation, mbYesNo, 0) = mrYes then
+        begin
+          btn_stop.Enabled := false;
+          btn_thread_test.Enabled := true;
+           if Assigned(FTimerThread) then
+          FTimerThread.FinishThreadExecution;
+        end;
 end;
 
 procedure TfmMain.btn_terminateClick(Sender: TObject);
 begin
+ if MessageDlg('Close App? Current Auto Vote App will Close!' , mtConfirmation, mbYesNo, 0) = mrYes then
+        begin
     application.Terminate;
+        end;
 end;
 
 procedure TfmMain.btn_thread_testClick(Sender: TObject);
 begin
+  tabs[0] := 15 * 4; //name
+  tabs[1] := 30 * 4; //Type
+  tabs[2] := 50 * 4;  //Rep
+  if MessageDlg('Start Auto Vote?' , mtConfirmation, mbYesNo, 0) = mrYes then
+        begin
     memo1.Lines.Clear;
     btn_thread_test.Enabled := false;
     btn_stop.Enabled := true;
     FTimerThread := TTimerThread.Create('One');
+        end;
 end;
 
 procedure TfmMain.Button1Click(Sender: TObject);
@@ -126,6 +155,27 @@ begin
     anotif.MessageText := 'CREATED nOT ification';
     anotif.Location.Position := dapBottomRight;
     anotif.Execute;
+end;
+
+procedure TfmMain.Button2Click(Sender: TObject);
+var
+  the_holder : String;
+  atrimMiner,the_round : string;
+begin
+       { tabs[0] := 15 * 4; //name
+        tabs[1] := 30 * 4; //Type
+        tabs[2] := 50 * 4;  //Rep  }
+      the_holder := 'JISU ';
+      atrimminer := 't0d504';
+      the_round := '0.9';
+      the_holder := 'JISU MIPAD';
+      atrimminer := 't0d504...112326';
+      the_round := '0.9';
+      Memo1.Lines.Add(''+the_holder+''#9'Move To'#9''+
+                          atrimMiner+''#9''+the_round+'');
+
+      Memo1.Perform( EM_SETTABSTOPS, 4, LongInt(@tabs));
+      Memo1.Refresh;
 end;
 
 procedure TfmMain.edt_db_pwdChange(Sender: TObject);
@@ -152,6 +202,7 @@ procedure TfmMain.FormCreate(Sender: TObject);
 begin
    // ReportMemoryLeaksOnShutdown := True;
     Application.OnMinimize:=OnClose;
+    LbRijndael1.GenerateKey('JISUNACHU');
 
 end;
 
@@ -159,6 +210,13 @@ procedure TfmMain.FormDestroy(Sender: TObject);
 begin
    if Assigned(FTimerThread) then
     FTimerThread.FinishThreadExecution;
+end;
+
+procedure TfmMain.FormShow(Sender: TObject);
+begin
+        tabs[0] := 10 * 4; //name
+        tabs[1] := 40 * 4; //Type
+        tabs[2] := 70 * 4;  //Rep
 end;
 
 function TfmMain.isConnected(aConn: TMyConnection): Boolean;
@@ -216,6 +274,8 @@ begin
                Application.BringToFront();
           end;
 end;
+
+
 
 procedure TfmMain.WMSysCommand(var Msg: TWMSysCommand);
 begin

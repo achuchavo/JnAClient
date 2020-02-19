@@ -19,7 +19,7 @@ object fmhome: Tfmhome
     Size.Height = 668.000000000000000000
     Size.PlatformDefault = False
     TabHeight = 49.000000000000000000
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     TabPosition = None
     Sizes = (
@@ -32,7 +32,7 @@ object fmhome: Tfmhome
         item
         end>
       HitTest = False
-      IsSelected = True
+      IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
@@ -395,6 +395,7 @@ object fmhome: Tfmhome
                   2008ED8352FF07B2FBA384224E90180000000049454E44AE426082}
                 FileName = 'C:\Users\Chavo\Box\Projects\ThreadTest\Win32\Debug\logo_144.png'
               end>
+            Align = Scale
             Position.X = 290.000000000000000000
             Position.Y = 56.000000000000000000
             Size.Width = 50.000000000000000000
@@ -525,6 +526,7 @@ object fmhome: Tfmhome
                   82}
                 FileName = 'C:\Users\Chavo\Box\Projects\ThreadTest\Win32\Debug\logo_144.png'
               end>
+            Align = Scale
             Position.X = 8.000000000000000000
             Position.Y = 57.000000000000000000
             Size.Width = 50.000000000000000000
@@ -558,7 +560,8 @@ object fmhome: Tfmhome
           end
         end
         object txt_hour: TText
-          Position.X = 94.000000000000000000
+          Align = Scale
+          Position.X = 109.000000000000000000
           Position.Y = 258.000000000000000000
           Size.Width = 252.000000000000000000
           Size.Height = 28.000000000000000000
@@ -568,9 +571,10 @@ object fmhome: Tfmhome
           TextSettings.HorzAlign = Leading
         end
         object Text9: TText
+          Align = Scale
           Position.X = 10.000000000000000000
           Position.Y = 258.000000000000000000
-          Size.Width = 82.000000000000000000
+          Size.Width = 94.000000000000000000
           Size.Height = 28.000000000000000000
           Size.PlatformDefault = False
           Text = '1 '#49884#44036' '#48320#46041' :'
@@ -580,7 +584,8 @@ object fmhome: Tfmhome
           TextSettings.HorzAlign = Trailing
         end
         object txt_day: TText
-          Position.X = 95.000000000000000000
+          Align = Scale
+          Position.X = 111.000000000000000000
           Position.Y = 288.000000000000000000
           Size.Width = 248.000000000000000000
           Size.Height = 28.000000000000000000
@@ -590,9 +595,10 @@ object fmhome: Tfmhome
           TextSettings.HorzAlign = Leading
         end
         object Text11: TText
+          Align = Scale
           Position.X = 10.000000000000000000
           Position.Y = 288.000000000000000000
-          Size.Width = 82.000000000000000000
+          Size.Width = 95.000000000000000000
           Size.Height = 28.000000000000000000
           Size.PlatformDefault = False
           Text = '24 '#49884#44036' '#48320#46041' :'
@@ -642,7 +648,7 @@ object fmhome: Tfmhome
         Align = Scale
         CanFocus = True
         ClipChildren = True
-        Position.X = 8.000000000000000000
+        Position.X = 14.000000000000000000
         Position.Y = 352.000000000000000000
         Size.Width = 345.000000000000000000
         Size.Height = 249.000000000000000000
@@ -692,7 +698,7 @@ object fmhome: Tfmhome
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
@@ -801,7 +807,7 @@ object fmhome: Tfmhome
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         StyleLookup = 'btn_startautoVoteStyle1'
-        TabOrder = 8
+        TabOrder = 7
         Text = #54869' '#51064
         TextSettings.Font.Family = 'NanumGothic'
         TextSettings.Font.Size = 16.000000000000000000
@@ -821,7 +827,7 @@ object fmhome: Tfmhome
         Size.Width = 316.000000000000000000
         Size.Height = 73.000015258789070000
         Size.PlatformDefault = False
-        TabOrder = 9
+        TabOrder = 8
         Viewport.Width = 308.000000000000000000
         Viewport.Height = 65.000000000000000000
       end
@@ -833,7 +839,7 @@ object fmhome: Tfmhome
         Size.Width = 120.000000000000000000
         Size.Height = 19.000030517578120000
         Size.PlatformDefault = False
-        TabOrder = 10
+        TabOrder = 9
         Text = #48708#48128#48264#54840' '#48372#44592
         TextSettings.Font.Family = 'NanumGothic'
         OnChange = chk_seepwdChange
@@ -851,22 +857,6 @@ object fmhome: Tfmhome
         TextSettings.Font.StyleExt = {04070000000000000004000000}
         TextSettings.FontColor = claDodgerblue
       end
-      object chk_ismyaddr: TCheckBox
-        Align = Scale
-        StyledSettings = [FontColor]
-        Position.X = 16.000000000000000000
-        Position.Y = 510.000000000000000000
-        Size.Width = 329.000000000000000000
-        Size.Height = 43.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 12
-        Text = 'My Addr'
-        TextSettings.Font.Family = 'NanumGothic'
-        TextSettings.Font.Size = 11.000000000000000000
-        TextSettings.Font.StyleExt = {00070000000000000004000000}
-        TextSettings.WordWrap = True
-        OnChange = chk_ismyaddrChange
-      end
       object txt_info: TText
         Align = Scale
         Position.X = 24.000000000000000000
@@ -879,20 +869,52 @@ object fmhome: Tfmhome
         TextSettings.Font.StyleExt = {00070000000200000004000000}
         TextSettings.FontColor = claMaroon
       end
-      object btn_mypage: TButton
-        Align = Scale
-        StyledSettings = [Style]
-        Position.X = 16.000000000000000000
-        Position.Y = 569.999938964843800000
-        Size.Width = 185.000000000000000000
-        Size.Height = 39.000000000000000000
+      object Layout1: TLayout
+        Align = Bottom
+        Margins.Left = 3.000000000000000000
+        Margins.Top = 3.000000000000000000
+        Margins.Right = 3.000000000000000000
+        Margins.Bottom = 3.000000000000000000
+        Position.X = 3.000000000000000000
+        Position.Y = 501.000000000000000000
+        Size.Width = 365.000000000000000000
+        Size.Height = 164.000000000000000000
         Size.PlatformDefault = False
-        StyleLookup = 'btn_startautoVoteStyle1'
-        TabOrder = 7
-        Text = #47560#51060' '#54168#51060#51648' '#48148#47196' '#44032#44592
-        TextSettings.Font.Family = 'NanumGothic'
-        TextSettings.Font.Size = 16.000000000000000000
-        OnClick = btn_mypageClick
+        TabOrder = 12
+        object chk_ismyaddr: TCheckBox
+          Align = Top
+          StyledSettings = [FontColor]
+          Size.Width = 365.000000000000000000
+          Size.Height = 43.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = 'My Addr'
+          TextSettings.Font.Family = 'NanumGothic'
+          TextSettings.Font.Size = 11.000000000000000000
+          TextSettings.Font.StyleExt = {00070000000000000004000000}
+          TextSettings.WordWrap = True
+          OnChange = chk_ismyaddrChange
+        end
+        object btn_mypage: TButton
+          Align = Scale
+          StyledSettings = [Style]
+          Position.X = 90.000000000000000000
+          Position.Y = 52.000000000000000000
+          Size.Width = 185.000000000000000000
+          Size.Height = 45.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'btn_startautoVoteStyle1'
+          TabOrder = 1
+          Text = #47560#51060' '#54168#51060#51648' '#48148#47196' '#44032#44592
+          TextSettings.Font.Family = 'NanumGothic'
+          TextSettings.Font.Size = 16.000000000000000000
+          OnClick = btn_mypageClick
+        end
+        object aAnimate: TAniIndicator
+          Position.X = 152.000000000000000000
+          Position.Y = 104.000000000000000000
+          Visible = False
+        end
       end
     end
   end
