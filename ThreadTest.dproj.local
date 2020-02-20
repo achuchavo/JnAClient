@@ -19,5 +19,7 @@
     <Transaction>2020/02/12 15:56:40.000.510,=C:\Users\Chavo\Box\Projects\bcrypt\Bcrypt.pas</Transaction>
     <Transaction>2020/02/12 16:20:44.000.525,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
     <Transaction>2020/02/12 16:26:21.000.074,C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas=C:\Users\Chavo\Box\Projects\ThreadTest\AES128.pas</Transaction>
+    <Transaction>2020/02/20 11:15:39.377,=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
+    <Transaction>2020/02/20 11:15:53.940,C:\Users\Chavo\Box\Projects\ThreadTest\ugetTierList.pas=C:\Users\Chavo\Box\Projects\ThreadTest\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

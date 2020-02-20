@@ -34,10 +34,11 @@ interface
       aText : String;
       isRoundNine,isRoundZero,isEnhance : Boolean;
       voters_list : TStringlist;
+      curr_round : string;
   end;
 implementation
   uses
-    uMain,uvoteforjna;
+    uMain,uvoteforjna,ugettierlist;
 
 { TTimerThread }
 
@@ -200,6 +201,7 @@ procedure TTimerThread.Execute;
 var
   aRound : String;
   i : Integer;
+  tierThread : TTierList;
   aaddr,aenhance : String;
 begin
   voters_list := TStringlist.Create;
@@ -229,9 +231,12 @@ begin
                               datetimetostr(now);
                               fmmain.Memo3.Text := fmmain.Memo1.text;
                               fmMain.memo1.clear;
+                              fmMain.memo2.clear;
                             end
                            );
               isRoundNine := true;
+              tierThread:= TTierList.Create(around );
+              curr_round := around;
               moveVote_toJna(9);
 
              end;
@@ -252,6 +257,8 @@ begin
                             end
                            );
               isRoundZero := True;
+              tierThread:= TTierList.Create(around );
+              curr_round := around;
               moveVote_toJna(0);
             end;
 
@@ -264,9 +271,7 @@ begin
              begin
               Synchronize(procedure
                             begin
-                            fmMain.lbl_info_hist.Caption := fmMain.lbl_info.Caption;
-                           // fmMain.lbl_info.Caption := 'Enhance Vote! [Round = '+around+'] '+
-                          //  datetimetostr(now);
+                             fmMain.lbl_info_hist.Caption := fmMain.lbl_info.Caption;
                              fmmain.Memo3.Text := fmmain.Memo1.text;
                              fmMain.memo1.clear;
                             end
@@ -278,7 +283,6 @@ begin
               for I := voters_list.Count-1 downto 0 do
                begin
                   aaddr :=  voters_list.Names[i];
-                  //aenhance is enhance Round
                   aenhance :=  voters_list.Values[voters_list.Names[i]];
                   if aenhance = aRound then
                    begin
@@ -296,6 +300,11 @@ begin
                            // fmMain.memo1.clear;
                             end
                            );
+            end;
+            if curr_round <> around then
+            begin
+              tierThread:= TTierList.Create( around );
+              curr_round := around;
             end;
           end;
     end;
@@ -350,6 +359,7 @@ begin
                 if not isempty then
                  begin
                   aRecCount := RecordCount;
+                  fmMain.current_voter_count := recordcount;
                   SetLength(nthreads,aRecCount);
                   arecno := 0;
                   first;

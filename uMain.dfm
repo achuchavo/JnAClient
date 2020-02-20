@@ -4,7 +4,7 @@ object fmMain: TfmMain
   BorderIcons = [biSystemMenu, biMaximize]
   Caption = 'Thread Test'
   ClientHeight = 729
-  ClientWidth = 926
+  ClientWidth = 1282
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,7 +21,7 @@ object fmMain: TfmMain
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 926
+    Width = 1282
     Height = 729
     ActivePage = page_main
     Align = alClient
@@ -35,7 +35,7 @@ object fmMain: TfmMain
       object pnl_top: TPanel
         Left = 0
         Top = 0
-        Width = 918
+        Width = 1274
         Height = 41
         Align = alTop
         BevelEdges = [beBottom]
@@ -45,7 +45,7 @@ object fmMain: TfmMain
         ExplicitWidth = 1147
         object lbl_round: TLabel
           AlignWithMargins = True
-          Left = 658
+          Left = 1014
           Top = 3
           Width = 257
           Height = 33
@@ -105,7 +105,7 @@ object fmMain: TfmMain
         AlignWithMargins = True
         Left = 3
         Top = 655
-        Width = 912
+        Width = 1268
         Height = 41
         Align = alBottom
         BevelEdges = [beTop]
@@ -128,7 +128,7 @@ object fmMain: TfmMain
         end
         object btn_terminate: TButton
           AlignWithMargins = True
-          Left = 769
+          Left = 1125
           Top = 3
           Width = 140
           Height = 33
@@ -143,7 +143,7 @@ object fmMain: TfmMain
       object pnl_client: TPanel
         Left = 0
         Top = 41
-        Width = 918
+        Width = 1274
         Height = 611
         Align = alClient
         BevelEdges = []
@@ -156,7 +156,7 @@ object fmMain: TfmMain
         object pnl_client_right: TPanel
           Left = 0
           Top = 0
-          Width = 457
+          Width = 569
           Height = 611
           Align = alLeft
           BevelEdges = [beRight]
@@ -167,7 +167,7 @@ object fmMain: TfmMain
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 449
+            Width = 561
             Height = 20
             Align = alTop
             Caption = 'Information Of Current Vote Status'
@@ -184,9 +184,9 @@ object fmMain: TfmMain
           end
           object Memo1: TMemo
             AlignWithMargins = True
-            Left = 3
+            Left = 167
             Top = 29
-            Width = 449
+            Width = 397
             Height = 579
             Align = alClient
             Font.Charset = DEFAULT_CHARSET
@@ -197,14 +197,31 @@ object fmMain: TfmMain
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
+            ExplicitLeft = 3
             ExplicitWidth = 618
+          end
+          object Memo2: TMemo
+            AlignWithMargins = True
+            Left = 3
+            Top = 29
+            Width = 158
+            Height = 579
+            Align = alLeft
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'NanumGothic'
+            Font.Style = []
+            ParentFont = False
+            ReadOnly = True
+            TabOrder = 1
           end
         end
         object Panel1: TPanel
           AlignWithMargins = True
-          Left = 460
+          Left = 572
           Top = 3
-          Width = 455
+          Width = 699
           Height = 605
           Align = alClient
           BevelEdges = []
@@ -215,31 +232,12 @@ object fmMain: TfmMain
           ExplicitTop = 288
           ExplicitWidth = 185
           ExplicitHeight = 41
-          object lbl_info_hist: TLabel
-            AlignWithMargins = True
-            Left = 3
-            Top = 3
-            Width = 449
-            Height = 20
-            Align = alTop
-            Caption = 'Information Of Current Vote Status'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -17
-            Font.Name = 'NanumGothic'
-            Font.Style = []
-            ParentFont = False
-            Layout = tlCenter
-            ExplicitLeft = 1
-            ExplicitTop = 1
-            ExplicitWidth = 270
-          end
           object Memo3: TMemo
             AlignWithMargins = True
             Left = 3
-            Top = 29
-            Width = 449
-            Height = 573
+            Top = 44
+            Width = 383
+            Height = 558
             Align = alClient
             BevelInner = bvNone
             BevelOuter = bvNone
@@ -252,7 +250,74 @@ object fmMain: TfmMain
             Font.Style = []
             ParentFont = False
             TabOrder = 0
-            ExplicitWidth = 511
+            ExplicitTop = 29
+            ExplicitWidth = 382
+            ExplicitHeight = 573
+          end
+          object mem_tier: TMemo
+            AlignWithMargins = True
+            Left = 392
+            Top = 44
+            Width = 304
+            Height = 558
+            Align = alRight
+            BevelInner = bvNone
+            BevelOuter = bvNone
+            BorderStyle = bsNone
+            Color = 3355443
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWhite
+            Font.Height = -12
+            Font.Name = 'NanumGothic'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 1
+            ExplicitTop = 29
+            ExplicitHeight = 573
+          end
+          object Panel2: TPanel
+            Left = 0
+            Top = 0
+            Width = 699
+            Height = 41
+            Align = alTop
+            BevelOuter = bvNone
+            TabOrder = 2
+            object lbl_info_hist: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 3
+              Width = 383
+              Height = 35
+              Align = alLeft
+              Caption = 'Information Of Current Vote Status'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -17
+              Font.Name = 'NanumGothic'
+              Font.Style = []
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object lbl_tierList: TLabel
+              AlignWithMargins = True
+              Left = 638
+              Top = 3
+              Width = 58
+              Height = 35
+              Align = alRight
+              Alignment = taRightJustify
+              Caption = 'Tier List'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -17
+              Font.Name = 'NanumGothic'
+              Font.Style = []
+              ParentFont = False
+              Layout = tlCenter
+              ExplicitLeft = 426
+              ExplicitHeight = 20
+            end
           end
         end
       end

@@ -1,13 +1,15 @@
 program ThreadTest;
 
 uses
-  Vcl.Forms,Windows,  //windows is added to enabled open one instance
+  Vcl.Forms,
+  Windows,
   uMain in 'uMain.pas' {fmMain},
   utimerThread in 'utimerThread.pas',
   uvoteForJnA in 'uvoteForJnA.pas',
   uvoteForRep in 'uvoteForRep.pas',
   Bcrypt in '..\bcrypt\Bcrypt.pas',
-  AES128 in 'AES128.pas';
+  AES128 in 'AES128.pas',
+  ugetTierList in 'ugetTierList.pas';
 
 {$R *.res}
 

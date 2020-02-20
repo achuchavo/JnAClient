@@ -48,6 +48,10 @@ type
     pnl_client_right: TPanel;
     Panel1: TPanel;
     Button2: TButton;
+    Memo2: TMemo;
+    mem_tier: TMemo;
+    Panel2: TPanel;
+    lbl_tierList: TLabel;
     procedure btn_thread_testClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -76,7 +80,9 @@ type
     var
 
       tabs: Array [0..2] of Integer;
+      tier_tabs: Array [0..1] of Integer;
       WM_FINDINSTANCE: Integer;
+      current_voter_count : integer;
 
 var
    FTimerThread: TTimerThread;
@@ -136,6 +142,8 @@ begin
   tabs[0] := 15 * 4; //name
   tabs[1] := 30 * 4; //Type
   tabs[2] := 50 * 4;  //Rep
+  tier_tabs[0] := 4 * 4; //name
+  tier_tabs[1] := 20 * 4; //Type
   if MessageDlg('Start Auto Vote?' , mtConfirmation, mbYesNo, 0) = mrYes then
         begin
     memo1.Lines.Clear;
@@ -165,17 +173,20 @@ begin
        { tabs[0] := 15 * 4; //name
         tabs[1] := 30 * 4; //Type
         tabs[2] := 50 * 4;  //Rep  }
+
+      tier_tabs[0] := 4 * 4; //name
+      tier_tabs[1] := 20 * 4; //Type
       the_holder := 'JISU ';
       atrimminer := 't0d504';
       the_round := '0.9';
       the_holder := 'JISU MIPAD';
       atrimminer := 't0d504...112326';
       the_round := '0.9';
-      Memo1.Lines.Add(''+the_holder+''#9'Move To'#9''+
-                          atrimMiner+''#9''+the_round+'');
+      mem_tier.Lines.Add(' '+the_round+''#9''+atrimminer+''#9''+
+                          '16,999,999.999');
 
-      Memo1.Perform( EM_SETTABSTOPS, 4, LongInt(@tabs));
-      Memo1.Refresh;
+      mem_tier.Perform( EM_SETTABSTOPS, 4, LongInt(@tier_tabs));
+      mem_tier.Refresh;
 end;
 
 procedure TfmMain.edt_db_pwdChange(Sender: TObject);

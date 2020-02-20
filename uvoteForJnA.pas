@@ -221,6 +221,7 @@ begin
                                       atrimMiner+''#9''+the_round+'');
                   fmMain.Memo1.Perform( EM_SETTABSTOPS, 4, LongInt(@fmMain.tabs));
                   fmMain.Memo1.Refresh;
+                  fmMain.Memo2.Lines.Add(' '+the_holder+' ['+the_round+']');
                 end
               );
 
@@ -238,6 +239,7 @@ begin
                                       atrimMiner+''#9''+the_round+'');
                   fmMain.Memo1.Perform( EM_SETTABSTOPS, 4, LongInt(@fmMain.tabs));
                   fmMain.Memo1.Refresh;
+                  fmMain.Memo2.Lines.Add(' '+the_holder+' ['+the_round+']');
                 end
               );
               end;
@@ -392,6 +394,8 @@ var
   vote_diff : double;
   imine_vote : double;
   lowest_mine : double;
+  //
+  aminer,aminer_concat,addr_concat : String;
 begin
    result := false;
    try
@@ -532,6 +536,30 @@ begin
          miner_ttc :=  strtofloat(ttc_tally.Values[ttc_tally.Names[ttc_tally.Count-1]]);
          result := true;
        end;
+
+       //update tier miner UI
+      {  Synchronize(procedure
+          begin
+            fmMain.mem_tier.Lines.clear;
+          end
+        );
+
+       for I := 0 to ttc_tally.Count-1 do
+        begin
+          imine_vote := strtofloat(ttc_tally.Values[ttc_tally.Names[I]]);
+          imine :=   formatfloat('#,###,###.###',imine_vote);
+          aminer :=  ttc_tally.Names[I];
+          aminer_concat := AnsiLeftStr(aminer, 6)+  '...'+AnsiRightStr(aminer, 6);
+        Synchronize(procedure
+          begin
+            fmMain.mem_tier.Lines.clear;
+            fmMain.mem_tier.Lines.Add(''+inttostr(i+1)+''#9''+aminer_concat+''#9''+imine);
+
+            fmMain.mem_tier.Perform( EM_SETTABSTOPS, 4, LongInt(@fmMain.tier_tabs));
+            fmMain.mem_tier.Refresh;
+          end
+        );
+        end;  }
 
 
    except on e : exception do
